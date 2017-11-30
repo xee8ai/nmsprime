@@ -358,3 +358,8 @@ table .index_check {
         padding:0px;
     }
 }
+
+.box{
+    border:1px solid grey;
+    height:25px;
+}

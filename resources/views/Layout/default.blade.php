@@ -27,6 +27,8 @@
 @yield ('form-javascript')
 @yield ('javascript')
 @yield ('javascript_extra')
+@yield('mycharts')
+@yield('fftchart')
 
 {{-- scroll to top btn --}}
 <a href="javascript:;" class="btn btn-icon btn-circle btn-success btn-scroll-to-top fade p-l-5" data-click="scroll-top"><i class="fa fa-angle-up"></i></a>

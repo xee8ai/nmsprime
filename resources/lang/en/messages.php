@@ -58,4 +58,5 @@ return [
 	'voip_extracharge_default' => 'Extra Charge Voip Calls default in %',
 	'voip_extracharge_mobile_national' => 'Extra Charge Voip Calls mobile national in %',
 	'Y' 					=> 'year|years',
+	'preeq_error'			=> 'Preequalization data not found',
 ];
