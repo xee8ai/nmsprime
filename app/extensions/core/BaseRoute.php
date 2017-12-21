@@ -50,6 +50,8 @@ class BaseRoute {
 	 * @param  string  $name
 	 * @param  string  $controller
 	 * @param  array  $options
+	 * @param  array  $access initialize routes for: ['index', 'edit', 'update', 'create', 'store', 'delete', 'search']
+	 *                        default: use all routes
 	 * @return void
 	 */
 	public static function resource($name, $controller, array $options = [], $access = [])

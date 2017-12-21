@@ -27,6 +27,8 @@ Route::group(['middleware' => 'ccc.base', 'prefix' => 'customer'], function () {
 	// Home Route, This will redirect depending on valid Login
 	Route::get('customer', array('as' => 'CHome', 'uses' => 'Modules\Ccc\Http\Controllers\AuthController@home'));
 
+	// CccContract
+	BaseRoute::resource('CccContract', 'Modules\Ccc\Http\Controllers\CccContractController', [], ['edit', 'update', 'create', 'store']);
 });
 
 
