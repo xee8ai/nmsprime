@@ -147,7 +147,7 @@ class AuthController extends Controller {
 	{
 		// Check Login
 		if (!$this->auth()->user())
-			return $this->showLoginForm();
+			return $this->showLoginForm(); // NOTE: this skips middleware. This is okay because no auth is required
 
 		// Valid User: goto default page
 		return $this->default_page();
@@ -195,7 +195,8 @@ class AuthController extends Controller {
 				}
 			}
 
-			return $this->default_page(); // login successful
+			// login successful
+			return $this->default_page();
 		}
 
 		// Throttling: increase wrong attempts

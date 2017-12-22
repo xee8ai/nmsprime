@@ -21,7 +21,7 @@ class AuthController extends Auth {
 		$this->prefix = 'customer'; // url prefix
 		$this->headline1 = $conf->headline1; //'ERZNET';
 		$this->headline2 = $conf->headline2; //'Customer Control Center';
-		$this->login_page = 'home'; // continue at ccc/home after successful login
+		$this->login_page = 'invoice'; // continue at ccc/home after successful login
 		$this->guard = 'ccc'; // use guard. See: config/auth.php
 		$this->image = 'main-pic-3.png';
 	}

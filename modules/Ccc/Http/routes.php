@@ -15,12 +15,12 @@ BaseRoute::group([], function() {
 // CCC internal stuff, with CCC authentication checking
 Route::group(['middleware' => 'ccc.base', 'prefix' => 'customer'], function () {
 
-	Route::get ('home', ['as' => 'HomeCcc', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@show']);
+	Route::get ('invoice', ['as' => 'HomeCcc', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@show']);
 	Route::get ('password', ['as' => 'CustomerPsw', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@psw_update']);
 	Route::post ('password', ['as' => 'CustomerPsw', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@psw_update']);
 
 	// Download Invoice
-	Route::get('home/download/{invoice}', array('as' => 'Customer.Download', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@download'));
+	Route::get('invoice/download/{invoice}', array('as' => 'Customer.Download', 'uses' => 'Modules\Ccc\Http\Controllers\CccAuthuserController@download'));
 
 	// TODO: add CCC internal required routing stuff
 
