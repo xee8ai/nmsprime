@@ -107,7 +107,7 @@ class AuthController extends Controller {
 		if(!is_null($this->login_page))
 			return Redirect::to($this->prefix.'/'.$this->login_page);
 
-		$roles = \Auth::user()->roles;
+		$roles = $this->auth()->user()->roles;
 
 		if (!count($roles))
 			return \View::make('auth.denied')->with('message', 'No roles assigned. Please contact your administrator.');
@@ -120,11 +120,11 @@ class AuthController extends Controller {
 		// TODO: Redirect to a global overview page
 		if (!\PPModule::is_active('Dashboard')) {
 			if (
-				(\PPModule::is_active('Provbase') && !\Auth::user()->has_permissions('ProvBase', 'Contract')) ||
+				(\PPModule::is_active('Provbase') && !$this->auth()->user()->has_permissions('ProvBase', 'Contract')) ||
 				(!\PPModule::is_active('ProvBase'))
 			) {
 				if (
-					(\PPModule::is_active('HfcReq') && !\Auth::user()->has_permissions('HfcReq', 'NetElement')) ||
+					(\PPModule::is_active('HfcReq') && !$this->auth()->user()->has_permissions('HfcReq', 'NetElement')) ||
 					(!\PPModule::is_active('HfcReq'))
 				) {
 					return Redirect::to($this->prefix.'/Config');
