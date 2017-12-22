@@ -54,59 +54,62 @@ class BaseRoute {
 	 *                        default: use all routes
 	 * @return void
 	 */
-	public static function resource($name, $controller, array $options = [], $access = [])
+	public static function resource($name, $controller, array $options = [], $access = [], $mw = [])
 	{
 		if ($access == [])
 			$access = ['index', 'edit', 'update', 'create', 'store', 'delete', 'search'];
 
+		if ($mw == [])
+			$mw = ['view' => 'auth:view', 'create' => 'auth:create', 'edit' => 'auth:edit', 'delete' => 'auth:delete'];
+
 		// Index
 		if (in_array('index', $access))
 		{
-			\Route::get($name, array('as' => $name.'.index', 'uses' => $controller.'@index', $options, 'middleware' => 'auth:view'));
+			\Route::get($name, array('as' => $name.'.index', 'uses' => $controller.'@index', $options, 'middleware' => $mw['view']));
 
 			// AJAX Index DataTable
-			\Route::get("$name/datatables", array('as' => $name.'.data', 'uses' => $controller.'@index_datatables_ajax', $options, 'middleware' => 'auth:view'));
+			\Route::get("$name/datatables", array('as' => $name.'.data', 'uses' => $controller.'@index_datatables_ajax', $options, 'middleware' => $mw['view']));
 
 			// API dump
-			\Route::get("$name/dump", array('as' => $name.'.dumpall', 'uses' => $controller.'@dumpall', $options, 'middleware' => 'auth:view'));
+			\Route::get("$name/dump", array('as' => $name.'.dumpall', 'uses' => $controller.'@dumpall', $options, 'middleware' => $mw['view']));
 		}
 
 		// Store
 		if (in_array('store', $access))
-			\Route::post($name, array('as' => $name.'.store', 'uses' => $controller.'@store', $options, 'middleware' => 'auth:create'));
+			\Route::post($name, array('as' => $name.'.store', 'uses' => $controller.'@store', $options, 'middleware' => $mw['create']));
 
 		// Create
 		if (in_array('create', $access))
 		{
-			\Route::get($name.'/create', array('as' => $name.'.create', 'uses' => $controller.'@create', $options, 'middleware' => 'auth:create')); // for viewing
-			\Route::post($name.'/create', array('as' => $name.'.create', 'uses' => $controller.'@create', $options, 'middleware' => 'auth:create'));
+			\Route::get($name.'/create', array('as' => $name.'.create', 'uses' => $controller.'@create', $options, 'middleware' => $mw['create'])); // for viewing
+			\Route::post($name.'/create', array('as' => $name.'.create', 'uses' => $controller.'@create', $options, 'middleware' => $mw['create']));
 		}
 
 		// update
 		if (in_array('update', $access))
 		{
-			\Route::patch("$name/{{$name}}", array('as' => $name.'.update', 'uses' => $controller.'@update', $options, 'middleware' => 'auth:edit'));
-			\Route::put("$name/{{$name}}", array('as' => $name.'.update', 'uses' => $controller.'@update', $options, 'middleware' => 'auth:edit'));
+			\Route::patch("$name/{{$name}}", array('as' => $name.'.update', 'uses' => $controller.'@update', $options, 'middleware' => $mw['edit']));
+			\Route::put("$name/{{$name}}", array('as' => $name.'.update', 'uses' => $controller.'@update', $options, 'middleware' => $mw['edit']));
 		}
 
 		// delete
 		if (in_array('delete', $access))
-			\Route::delete("$name/{{$name}}", array('as' => $name.'.destroy', 'uses' => $controller.'@destroy', $options, 'middleware' => 'auth:delete'));
+			\Route::delete("$name/{{$name}}", array('as' => $name.'.destroy', 'uses' => $controller.'@destroy', $options, 'middleware' => $mw['delete']));
 
 		// edit
 		if (in_array('edit', $access))
 		{
-			\Route::get("$name/{{$name}}/edit", array('as' => $name.'.edit', 'uses' => $controller.'@edit', $options, 'middleware' => 'auth:view'));
+			\Route::get("$name/{{$name}}/edit", array('as' => $name.'.edit', 'uses' => $controller.'@edit', $options, 'middleware' => $mw['view']));
 
 			// API dump
-			\Route::get("$name/{{$name}}/dump", array('as' => $name.'.dump', 'uses' => $controller.'@dump', $options, 'middleware' => 'auth:view'));
+			\Route::get("$name/{{$name}}/dump", array('as' => $name.'.dump', 'uses' => $controller.'@dump', $options, 'middleware' => $mw['view']));
 
 		}
 
 		// Fulltext Search
 		if (in_array('search', $access))
 			// TODO: adapt route name to not strtolower() like other functions
-			\Route::get(strtolower($name).'/fulltextSearch', array('as' => $name.'.fulltextSearch', 'uses' => $controller.'@fulltextSearch', $options, 'middleware' => 'auth:view'));
+			\Route::get(strtolower($name).'/fulltextSearch', array('as' => $name.'.fulltextSearch', 'uses' => $controller.'@fulltextSearch', $options, 'middleware' => $mw['view']));
 
 	}
 
