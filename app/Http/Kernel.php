@@ -33,7 +33,7 @@ class Kernel extends HttpKernel {
 		'ccc.base' => \Modules\Ccc\Http\Middleware\CccBaseMiddleware::class,
 
 		// Redirect Start Page
-		'home' => \App\Http\Middleware\RedirectStartPage::class,
+		'redirect_start_page' => \App\Http\Middleware\RedirectStartPage::class,
 
 		// L5 defaults:
 		//'auth' => 'App\Http\Middleware\Authenticate',
