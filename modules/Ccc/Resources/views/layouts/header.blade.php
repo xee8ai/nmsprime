@@ -1,5 +1,10 @@
 <div id="page-container" class="fade page-sidebar-fixed page-header-fixed in">
 	<div id="sidebar" class="sidebar">
+
+{{-- For Demo: Links – TODO: use native sidebar stuff --}}
+  {{ HTML::linkRoute('HomeCcc', 'Invoice List') }} <br>
+  {{ HTML::linkRoute('CccContract.edit', 'Contract Details', [\Auth::guard('ccc')->user()->contract_id]) }}
+
 </div>
 
 
