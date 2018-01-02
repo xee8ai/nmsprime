@@ -24,10 +24,14 @@ Route::group(['middleware' => 'ccc.base', 'prefix' => 'customer'], function () {
 
 	// TODO: add CCC internal required routing stuff
 
-	// CccContract
-	BaseRoute::resource('CccContract', 'Modules\Ccc\Http\Controllers\CccContractController', [], ['edit', 'update', 'create', 'store']);
 });
 
+// CccContract
+// NOTE: uses own middleware array
+
+$access = ['edit', 'update', 'create', 'store'];
+$mw = ['view' => 'ccc.base', 'edit' => 'ccc.base', 'index' => 'ccc.base', 'create' => 'ccc.base'];
+BaseRoute::resource('CccContract', 'Modules\Ccc\Http\Controllers\CccContractController', [], $access, $mw);
 
 // Home Route, This will redirect depending on valid Login
 Route::get('customer', array('as' => 'CHome', 'uses' => 'Modules\Ccc\Http\Controllers\AuthController@home'));
