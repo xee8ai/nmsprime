@@ -76,10 +76,21 @@ class TreeTopographyController extends HfcBaseController {
 		// MPS: get all Modem Positioning Rules
 		$mpr = $this->mpr(NetElement::whereRaw($s));
 
+		//temporary heat map data @author: John Adebayo
+		$dim = [];
+		foreach (\Modules\ProvBase\Entities\Modem::all() as $modem => $value) {
+			$temp = round($value['tdr'] / 111111.1, 4);
+				for ($i=0; $i <= 360 ; $i+=30) {
+					$dim[] = $temp * cos($i) + $value['y'];
+					$dim[] = $temp * sin($i) + $value['x'];
+				}
+			}
+		$dim = array_chunk($dim, 2);
+
 		// NetElements: generate kml_file upload array
 		$kmls = $this->kml_file_array(NetElement::whereRaw($s)->whereNotNull('pos')->where('pos', '!=', ' '));
 
-		return \View::make('hfcbase::Tree.topo', $this->compact_prep_view(compact('file', 'target', 'route_name', 'view_header', 'panel_right', 'body_onload', 'field', 'search', 'mpr', 'kmls')));
+		return \View::make('hfcbase::Tree.topo', $this->compact_prep_view(compact('file', 'target', 'route_name', 'view_header', 'panel_right', 'body_onload', 'field', 'search', 'mpr', 'dim' ,'kmls')));
 	}
 
 
@@ -103,6 +114,18 @@ class TreeTopographyController extends HfcBaseController {
 
 		return $a;
 	}
+
+	/*
+	Get the Heatmap data
+	$townList = Town::all();
+
+return View::make('town')->with('townList', $townList);
+
+Because you are getting an object with many results your view:
+@foreach($townList as $town)
+{{ $town->name }} or what the column name is
+@endforeach
+	*/
 
 
 	/*
