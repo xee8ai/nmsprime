@@ -161,6 +161,7 @@ class ContractController extends \BaseController {
 		// generate contract number
 		if (!$data['number'] && \PPModule::is_active('billingbase'))
 		{
+			// TODO: Torsten Schmidt: IMHO – This should be done in Model context, otherwise it's not available under different circumstances
 			$num = \Modules\BillingBase\Entities\NumberRange::get_new_number('contract', $data['costcenter_id']);
 
 			if ($num)
