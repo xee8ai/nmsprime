@@ -7,17 +7,14 @@ use Auth;
 use Input;
 use Redirect;
 use GlobalConfig;
-
 // NOTE: will not work with default Request class (?) from app.php: Illuminate\Support\Facades\Request
 use Illuminate\Http\Request;
-
+use Modules\Ccc\Entities\CccAuthuser;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 
-use Modules\Ccc\Entities\CccAuthuser;
-
 /**
- * Basic AuthController
+ * Basic AuthController.
  *
  * IMPORTANT: !!! do not use Auth:: directly, instead use $this->auth() !!!
  *            This will take care of the correct authentication API for
@@ -27,210 +24,210 @@ use Modules\Ccc\Entities\CccAuthuser;
  * @author Patrick Reichel (founder)
  * @author Torsten Schmidt (adaptions to PingPong, middleware, CCC, adapt to L5.2 code like Throttling)
  */
-class AuthController extends Controller {
+class AuthController extends Controller
+{
+    use AuthenticatesAndRegistersUsers, ThrottlesLogins;
 
-	use AuthenticatesAndRegistersUsers, ThrottlesLogins;
+    // URL prefix, Headlines, Login Page after successful login, authentication guarder, bg image
+    protected $prefix;
+    protected $headline1;
+    protected $headline2;
+    protected $login_page;
+    protected $guard;
+    protected $image;
 
-	// URL prefix, Headlines, Login Page after successful login, authentication guarder, bg image
-	protected $prefix, $headline1, $headline2, $login_page, $guard, $image;
+    // @see usage from Illuminate\Foundation\Auth\AuthenticatesUsers
+    protected $username = 'login_name';
 
-	// @see usage from Illuminate\Foundation\Auth\AuthenticatesUsers
-	protected $username = 'login_name';
+    // Constructor
+    public function __construct()
+    {
+        $g = GlobalConfig::first();
+        $this->headline1 = $g->headline1;
+        $this->headline2 = $g->headline2;
+        $this->prefix = \BaseRoute::$admin_prefix; // url prefix
+        $this->login_page = null; // means jump to normal admin page
+        $this->image = 'main-pic-1.jpg';
 
+        // @see: L5 documentation for authentication and "Accessing Specific Guard Instances"
+        // @see: config/auth.php
+        $this->guard = 'admin';
+    }
 
-	// Constructor
-	public function __construct()
-	{
-		$g = GlobalConfig::first();
-		$this->headline1 = $g->headline1;
-		$this->headline2 = $g->headline2;
-		$this->prefix = \BaseRoute::$admin_prefix; // url prefix
-		$this->login_page = null; // means jump to normal admin page
-		$this->image = 'main-pic-1.jpg';
+    /**
+     * A local helper which MUST be used instead of Auth::.
+     * @return type Auth object (for actual object guard)
+     * @author Torsten Schmidt
+     */
+    private function auth()
+    {
+        return Auth::guard($this->guard);
+    }
 
-		// @see: L5 documentation for authentication and "Accessing Specific Guard Instances"
-		// @see: config/auth.php
-		$this->guard = 'admin';
-	}
+    /**
+     * Local Helper for Logging.
+     * @param type $text log message
+     * @param type|string $level [debug|info|warning|..]
+     * @return type
+     */
+    private function log($text, $level = 'info')
+    {
+        Log::{$level}('Auth('.$this->guard.'): '.$text);
+    }
 
+    /**
+     * Show Login Page.
+     *
+     * @return type view
+     */
+    public function showLoginForm()
+    {
+        $head1 = $this->headline1;
+        $head2 = $this->headline2;
+        $prefix = $this->prefix;
+        $image = $this->image;
 
-	/**
-	 * A local helper which MUST be used instead of Auth::
-	 * @return type Auth object (for actual object guard)
-	 * @author Torsten Schmidt
-	 */
-	private function auth()
-	{
-		return Auth::guard($this->guard);
-	}
+        \App::setLocale(\App\Http\Controllers\BaseViewController::get_user_lang());
 
+        // show the form
+        return \View::make('auth.login', compact('head1', 'head2', 'prefix', 'image'));
+    }
 
-	/**
-	 * Local Helper for Logging
-	 * @param type $text log message
-	 * @param type|string $level [debug|info|warning|..]
-	 * @return type
-	 */
-	private function log($text, $level = 'info')
-	{
-		Log::{$level}('Auth('.$this->guard.'): '.$text);
-	}
+    /**
+     * Show Default Page after successful login.
+     *
+     * TODO: use $this to return a global defined default page, see below
+     *
+     * @return type Redirect
+     */
+    private function default_page()
+    {
+        if (! is_null($this->login_page)) {
+            return Redirect::to($this->prefix.'/'.$this->login_page);
+        }
 
+        $roles = \Auth::user()->roles;
 
-	/**
-	 * Show Login Page
-	 *
-	 * @return type view
-	 */
-	public function showLoginForm()
-	{
-		$head1 = $this->headline1;
-		$head2 = $this->headline2;
-		$prefix = $this->prefix;
-		$image = $this->image;
+        if (! count($roles)) {
+            return \View::make('auth.denied')->with('message', 'No roles assigned. Please contact your administrator.');
+        }
 
-		\App::setLocale(\App\Http\Controllers\BaseViewController::get_user_lang());
+        // TODO: return to dashboard, but via $login_page variable !
+        // If ProvBase is not installed redirect to Config Page
+        $bm = new \BaseModel;
 
-		// show the form
-		return \View::make('auth.login', compact('head1', 'head2', 'prefix', 'image'));
-	}
+        // Redirect to Default Page
+        // TODO: Redirect to a global overview page
+        if (! \PPModule::is_active('Dashboard')) {
+            if (
+                (\PPModule::is_active('Provbase') && ! \Auth::user()->has_permissions('ProvBase', 'Contract')) ||
+                (! \PPModule::is_active('ProvBase'))
+            ) {
+                if (
+                    (\PPModule::is_active('HfcReq') && ! \Auth::user()->has_permissions('HfcReq', 'NetElement')) ||
+                    (! \PPModule::is_active('HfcReq'))
+                ) {
+                    return Redirect::to($this->prefix.'/Config');
+                } else {
+                    return Redirect::to($this->prefix.'/NetElement');
+                }
+            } else {
+                return Redirect::to($this->prefix.'/Contract');
+            }
+        } else {
+            return Redirect::to($this->prefix.'/Dashboard');
+        }
+    }
 
+    /**
+     * This is the BASIC Home '/' Route Function.
+     */
+    public function home()
+    {
+        // Check Login
+        if (! $this->auth()->user()) {
+            return $this->showLoginForm();
+        }
 
-	/**
-	 * Show Default Page after successful login
-	 *
-	 * TODO: use $this to return a global defined default page, see below
-	 *
-	 * @return type Redirect
-	 */
-	private function default_page()
-	{
-		if(!is_null($this->login_page))
-			return Redirect::to($this->prefix.'/'.$this->login_page);
+        // Valid User: goto default page
+        return $this->default_page();
+    }
 
-		$roles = \Auth::user()->roles;
+    /**
+     * Perform Login. Check if the requested user is could login.
+     *
+     * @todo NAT addresses could be blocked by throttle algorithm
+     * @todo implement a new MVC for IP address access lists
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postLogin(Request $request)
+    {
+        // Validation
+        $this->validateLogin($request);
 
-		if (!count($roles))
-			return \View::make('auth.denied')->with('message', 'No roles assigned. Please contact your administrator.');
+        // Authentication Throttling
+        $throttles = $this->isUsingThrottlesLoginsTrait();
+        if ($throttles && $lockedOut = $this->hasTooManyLoginAttempts($request)) {
+            $this->log('Block: '.$request->ip().' has reached maximum numbers of retries!', 'warning');
 
-		// TODO: return to dashboard, but via $login_page variable !
-		// If ProvBase is not installed redirect to Config Page
-		$bm = new \BaseModel;
+            return $this->sendLockoutResponse($request);
+        }
 
-		// Redirect to Default Page
-		// TODO: Redirect to a global overview page
-		if (!\PPModule::is_active('Dashboard')) {
-			if (
-				(\PPModule::is_active('Provbase') && !\Auth::user()->has_permissions('ProvBase', 'Contract')) ||
-				(!\PPModule::is_active('ProvBase'))
-			) {
-				if (
-					(\PPModule::is_active('HfcReq') && !\Auth::user()->has_permissions('HfcReq', 'NetElement')) ||
-					(!\PPModule::is_active('HfcReq'))
-				) {
-					return Redirect::to($this->prefix.'/Config');
-				} else {
-					return Redirect::to($this->prefix.'/NetElement');
-				}
-			} else {
-				return Redirect::to($this->prefix.'/Contract');
-			}
-		} else {
-			return Redirect::to($this->prefix . '/Dashboard');
-		}
-	}
+        // create our user data for the authentication
+        $userdata = $request->only('login_name', 'password');
 
+        // attempt to do the login
+        if ($this->auth()->attempt($userdata)) {
+            $this->log(Input::get('login_name').' has logged in');
 
-	/**
-	 * This is the BASIC Home '/' Route Function
-	 */
-	public function home()
-	{
-		// Check Login
-		if (!$this->auth()->user())
-			return $this->showLoginForm();
+            // update email password hash (salted sha512), if customer logs in successfully
+            // this way we don't need to ask customers to set a new password manually
+            if (\PPModule::is_active('mail') && $this->prefix == 'customer') {
+                foreach (CccAuthuser::where('login_name', '=', $request->login_name)->first()->contract->emails as $email) {
+                    // password has already been hashed with sha512
+                    if (substr($email->password, 0, 3) === '$6$') {
+                        continue;
+                    }
+                    $email->psw_update($request->password);
+                }
+            }
 
-		// Valid User: goto default page
-		return $this->default_page();
-	}
+            return $this->default_page(); // login successful
+        }
 
+        // Throttling: increase wrong attempts
+        if ($throttles && ! $lockedOut) {
+            $this->incrementLoginAttempts($request);
+        }
 
-	/**
-	 * Perform Login. Check if the requested user is could login
-	 *
-	 * @todo NAT addresses could be blocked by throttle algorithm
-	 * @todo implement a new MVC for IP address access lists
-	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 * @return \Illuminate\Http\RedirectResponse
-	 */
-	public function postLogin(Request $request)
-	{
-		// Validation
-		$this->validateLogin($request);
+        $this->log(Input::get('login_name').' wrong login attempt', 'debug');
 
-		// Authentication Throttling
-		$throttles = $this->isUsingThrottlesLoginsTrait();
-		if ($throttles && $lockedOut = $this->hasTooManyLoginAttempts($request))
-		{
-			$this->log('Block: '.$request->ip().' has reached maximum numbers of retries!', 'warning');
-			return $this->sendLockoutResponse($request);
-		}
+        // Login not successful, send back to form
+        return Redirect::to($this->prefix.'/auth/login')
+            ->withInput(Input::except('password')) // send back the input (not the password) so that we can repopulate the form
+            ->withErrors(['error_test' => $this->getFailedLoginMessage()]);
+    }
 
-		// create our user data for the authentication
-		$userdata = $request->only('login_name', 'password');
+    /**
+     * Logout User.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getLogout()
+    {
+        $this->redirectAfterLogout = $this->prefix.'/auth/login';
 
-		// attempt to do the login
-		if ($this->auth()->attempt($userdata))
-		{
-			$this->log(Input::get('login_name').' has logged in');
+        return $this->logout();
+    }
 
-			// update email password hash (salted sha512), if customer logs in successfully
-			// this way we don't need to ask customers to set a new password manually
-			if(\PPModule::is_active('mail') && $this->prefix == 'customer') {
-				foreach(CccAuthuser::where('login_name', '=', $request->login_name)->first()->contract->emails as $email) {
-					// password has already been hashed with sha512
-					if(substr($email->password,0,3) === '$6$')
-						continue;
-					$email->psw_update($request->password);
-				}
-			}
-
-			return $this->default_page(); // login successful
-		}
-
-		// Throttling: increase wrong attempts
-		if ($throttles && !$lockedOut)
-			$this->incrementLoginAttempts($request);
-
-		$this->log(Input::get('login_name').' wrong login attempt', 'debug');
-
-		// Login not successful, send back to form
-		return Redirect::to($this->prefix.'/auth/login')
-			->withInput(Input::except('password')) // send back the input (not the password) so that we can repopulate the form
-			->withErrors(['error_test' => $this->getFailedLoginMessage()]);
-	}
-
-
-	/**
-	 * Logout User
-	 *
-	 * @return \Illuminate\Http\Response
-	 */
-	public function getLogout()
-	{
-		$this->redirectAfterLogout = $this->prefix.'/auth/login';
-
-		return $this->logout();
-	}
-
-
-	/**
-	 * This function will be called if user has no access to a certain area
-	 * or has no valid login at all.
-	 */
-	public function denied()
-	{
-		return \View::make('auth.denied')->with('message', 'Test');
-	}
+    /**
+     * This function will be called if user has no access to a certain area
+     * or has no valid login at all.
+     */
+    public function denied()
+    {
+        return \View::make('auth.denied')->with('message', 'Test');
+    }
 }

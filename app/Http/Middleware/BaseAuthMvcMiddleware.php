@@ -15,7 +15,7 @@ class BaseAuthMvcMiddleware
      * @param string $role
      * @return mixed
      */
-    public function handle($request, Closure $next, $role=null)
+    public function handle($request, Closure $next, $role = null)
     {
         BaseAuthController::auth_check($role);
 
