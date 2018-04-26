@@ -8,7 +8,7 @@ class RedirectStartPage
 {
     /**
      * Start Page: Page which show link to admin or ccc panel
-     * This site is only required if Admin and CCC runs on same port
+     * This site is only required if Admin and CCC runs on same port.
      *
      * USE: HTTPS_ADMIN_PORT or
      *      HTTPS_CCC_PORT
@@ -28,25 +28,27 @@ class RedirectStartPage
         // NOTE: required for backward compatibility
         //       admin and ccc run's on same port
         $admin_port = env('HTTPS_ADMIN_PORT', '443');
-        $ccc_port   = env('HTTPS_CCC_PORT', '443');
+        $ccc_port = env('HTTPS_CCC_PORT', '443');
 
         // if same port, show start page
-        if ($admin_port == $ccc_port)
+        if ($admin_port == $ccc_port) {
             return $next($request);
+        }
 
-		if (env('APP_ENV') == 'testing') {
-			// $_SERVER['SERVER_PORT'] does not exist if running phpunit
-			$server_port = \Request::getPort();
-		}
-		else {
-			$server_port = $_SERVER['SERVER_PORT'];
-		}
+        if (env('APP_ENV') == 'testing') {
+            // $_SERVER['SERVER_PORT'] does not exist if running phpunit
+            $server_port = \Request::getPort();
+        } else {
+            $server_port = $_SERVER['SERVER_PORT'];
+        }
 
-        if ($server_port == $admin_port)
+        if ($server_port == $admin_port) {
             return redirect('admin');
+        }
 
-        if ($server_port == $ccc_port)
+        if ($server_port == $ccc_port) {
             return redirect('customer');
+        }
 
         // start page
         return $next($request);

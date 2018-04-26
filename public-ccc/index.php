@@ -1,8 +1,7 @@
 <?php
 /**
- * Laravel - A PHP Framework For Web Artisans
+ * Laravel - A PHP Framework For Web Artisans.
  *
- * @package  Laravel
  * @author   Taylor Otwell <taylorotwell@gmail.com>
  */
 
@@ -48,7 +47,6 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $kernel = $app->make('Illuminate\Contracts\Http\Kernel');
 
-
 /*
  * Check permissions: disable all admin pages and/or redirect
  * to customer control center (ccc)
@@ -57,20 +55,18 @@ $kernel = $app->make('Illuminate\Contracts\Http\Kernel');
  */
 $request = Illuminate\Http\Request::capture();
 
-if ($request->is('admin/*'))
-{
-	/*
-	 * TODO: throw "nice looking" access error due to permisson restriction!
-	 *       Wrong http port to access admin section!
-	 */
-	echo "Wrong http port to access admin section!";
+if ($request->is('admin/*')) {
+    /*
+     * TODO: throw "nice looking" access error due to permisson restriction!
+     *       Wrong http port to access admin section!
+     */
+    echo 'Wrong http port to access admin section!';
 
-	return;
+    return;
 }
 
-
 $response = $kernel->handle(
-	$request
+    $request
 );
 
 $response->send();

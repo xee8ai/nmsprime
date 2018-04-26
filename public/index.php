@@ -1,8 +1,7 @@
 <?php
 /**
- * Laravel - A PHP Framework For Web Artisans
+ * Laravel - A PHP Framework For Web Artisans.
  *
- * @package  Laravel
  * @author   Taylor Otwell <taylorotwell@gmail.com>
  */
 
@@ -48,22 +47,20 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $request = Illuminate\Http\Request::capture();
 
-if ($request->is('customer/*'))
-{
-	/*
-	 * TODO: throw "nice looking" access error due to permisson restriction!
-	 *       Wrong http port to access admin section!
-	 */
-	echo "Wrong http port to access customer section!";
+if ($request->is('customer/*')) {
+    /*
+     * TODO: throw "nice looking" access error due to permisson restriction!
+     *       Wrong http port to access admin section!
+     */
+    echo 'Wrong http port to access customer section!';
 
-	return;
+    return;
 }
-
 
 $kernel = $app->make('Illuminate\Contracts\Http\Kernel');
 
 $response = $kernel->handle(
-	$request = Illuminate\Http\Request::capture()
+    $request = Illuminate\Http\Request::capture()
 );
 
 $response->send();
